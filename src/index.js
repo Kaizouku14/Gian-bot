@@ -37,13 +37,13 @@ client.on('messageCreate', message => {
             leaderBoard.push({ name: author, count: filteredMessage.length }); 
         }
 
-        const count = leaderBoard.find(value => value.name === author)?.count || null;
-        const embed = checkMilestones(author , count);
-        
-        if (embed) {
-            message.channel.send({ embeds: [embed] });
-        }
+    const count = leaderBoard.find(value => value.name === author)?.count || null;
+    const embed = checkMilestones(author , count);
+
+    if (embed) {
+        message.channel.send({ embeds: [embed] });
     }
+  }
 })
 
 client.on('interactionCreate', async (interaction) => {
