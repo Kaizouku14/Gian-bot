@@ -50,8 +50,7 @@ client.on('interactionCreate', async (interaction) => {
 
     if(interaction.commandName === 'ping'){
         const username = interaction.user.username;
-        const userEntry = leader
-            Board.find(entry => entry.name === username);
+        const userEntry = leaderBoard.find(entry => entry.name === username);
 
         if (userEntry) {
             const embed = new EmbedBuilder()
