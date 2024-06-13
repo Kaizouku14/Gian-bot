@@ -1,6 +1,7 @@
-const { Client, 
-    GatewayIntentBits ,
-    EmbedBuilder
+const { 
+Client, 
+GatewayIntentBits ,
+EmbedBuilder
 } = require('discord.js');
 require('dotenv').config();
 
@@ -39,10 +40,11 @@ client.on('messageCreate', message => {
 
     const count = leaderBoard.find(value => value.name === author)?.count || null;
     const embed = checkMilestones(author , count);
-        if (embed) {
-            message.channel.send({ embeds: [embed] });
-        }
+
+    if (embed) {
+        message.channel.send({ embeds: [embed] });
     }
+  }
 })
 
 client.on('interactionCreate', async (interaction) => {
@@ -87,7 +89,7 @@ client.on('interactionCreate', async (interaction) => {
     
             await interaction.reply({ embeds: [embed] });
        }else{
-           await interaction.reply(` \`No record yet.\` `)
+           await interaction.reply('\`No record yet.\`')
        }      
     }
 })
