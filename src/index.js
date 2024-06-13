@@ -63,7 +63,7 @@ client.on('interactionCreate', async (interaction) => {
             await interaction.reply(` \`Hey\` ${interaction.user}, \`You do not have an achievement 😔.\` `);
         }
     }  
-``
+
     if(interaction.commandName === 'leaderboard'){
        if(leaderBoard.length > 0){
             leaderBoard.sort((a, b) => b.count - a.count) // sort in descending order
