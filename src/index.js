@@ -36,12 +36,12 @@ client.on('messageCreate', message => {
         if (!userFound) {
             leaderBoard.push({ name: author, count: filteredMessage.length }); 
         }
-    }
 
     const count = leaderBoard.find(value => value.name === author)?.count || null;
     const embed = checkMilestones(author , count);
-    if (embed) {
-        message.channel.send({ embeds: [embed] });
+        if (embed) {
+            message.channel.send({ embeds: [embed] });
+        }
     }
 })
 
