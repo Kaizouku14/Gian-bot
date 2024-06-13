@@ -36,12 +36,13 @@ client.on('messageCreate', message => {
         if (!userFound) {
             leaderBoard.push({ name: author, count: filteredMessage.length }); 
         }
-    }
 
-    const count = leadBoard.find(value => value.name === author)?.count || null;
-    const embed = checkMilestones(author , count);
-    if (embed) {
-        message.channel.send({ embeds: [embed] });
+        const count = leaderBoard.find(value => value.name === author)?.count || null;
+        const embed = checkMilestones(author , count);
+        
+        if (embed) {
+            message.channel.send({ embeds: [embed] });
+        }
     }
 })
 
@@ -50,7 +51,7 @@ client.on('interactionCreate', async (interaction) => {
 
     if(interaction.commandName === 'ping'){
         const username = interaction.user.username;
-        const userEntry = leadBoard.find(entry => entry.name === username);
+        const userEntry = leaderBoard.find(entry => entry.name === username);
 
         if (userEntry) {
             const embed = new EmbedBuilder()
@@ -63,7 +64,7 @@ client.on('interactionCreate', async (interaction) => {
             await interaction.reply(` \`Hey\` ${interaction.user}, \`You do not have an achievement 😔.\` `);
         }
     }  
-``
+
     if(interaction.commandName === 'leaderboard'){
        if(leaderBoard.length > 0){
             leaderBoard.sort((a, b) => b.count - a.count) // sort in descending order
