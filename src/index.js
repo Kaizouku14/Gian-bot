@@ -38,7 +38,7 @@ client.on('messageCreate', message => {
         }
     }
 
-    const count = leadBoard.find(value => value.name === author)?.count || null;
+    const count = leaderBoard.find(value => value.name === author)?.count || null;
     const embed = checkMilestones(author , count);
     if (embed) {
         message.channel.send({ embeds: [embed] });
@@ -50,7 +50,8 @@ client.on('interactionCreate', async (interaction) => {
 
     if(interaction.commandName === 'ping'){
         const username = interaction.user.username;
-        const userEntry = leadBoard.find(entry => entry.name === username);
+        const userEntry = leader
+            Board.find(entry => entry.name === username);
 
         if (userEntry) {
             const embed = new EmbedBuilder()
