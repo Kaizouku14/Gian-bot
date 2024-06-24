@@ -3,11 +3,9 @@ const { Client,
     EmbedBuilder
 } = require('discord.js');
 const { keepAlive } = require('./utils/keepAlive');
-const { default: database } = require('./database/connection');
-database
+const { writeUserData } = require('./database/service');
 
 require('dotenv').config();
-
 
 const client = new Client ({
   intents : [ GatewayIntentBits.Guilds,
@@ -41,15 +39,15 @@ client.on('messageCreate', message => {
         })
 
         if (!userFound) {
-            leaderBoard.push({ name: author, count: filteredMessage.length }); 
+            writeUserData(message.author, author, filteredMessage.length)
         }
 
-        const count = leaderBoard.find(value => value.name === author)?.count || null;
-        const embed = checkMilestones(author , count);
+        // const count = leaderBoard.find(value => value.name === author)?.count || null;
+        // const embed = checkMilestones(author , count);
 
-        if (embed) {
-            message.channel.send({ embeds: [embed] });
-        }
+        // if (embed) {
+        //     message.channel.send({ embeds: [embed] });
+        // }
     }
 })
 

@@ -13,6 +13,4 @@ const keepAlive = ({text, port}) => {
     return server;
 }
 
-module.exports = {
-    keepAlive
-}
+module.exports = { keepAlive }
