@@ -1,4 +1,4 @@
-const { ref , set , get } = require("firebase/database");
+const { ref , set , get , child , update } = require("firebase/database");
 const { db } = require("./connection");
 
 
@@ -14,29 +14,28 @@ const writeUserData = async (userId, name, count ) => {
     }
 }
 
-const retrieveUserData = async (userId) => {
-    try {
-        await get(ref(db, 'users/' + userId), {
-            username: name,
-            count: count    
-        });
-    } catch (error) {
-        console.error('Error retrieving data:', error);
-    }
-}
+const validateUser = async (userId, newCount) => {
+    const dbRef = ref(db);
 
-const validateUser = async (userId) => {
-   const dbRef = ref(db);
+    await get(child(dbRef, `users/${userId}`)).then((snapshot) => {
 
-   await get(child(dbRef, `users/${userId}`)).then((snapshot) => {
-
-        if (snapshot.exists()) {
-            console.log(snapshot.val());
-        } else {
-            console.log("No data available");
-        }
-
+        if (snapshot.exists()){
+            updateUserData(newCount)
+            return true
+        } 
+        else return false
+        
     }).catch((error) => console.log(error));
 }
 
-module.exports = { writeUserData }
+const updateUserData = async (userId, newCount ) => {
+    try{
+        await update(ref(db, `users/${userId}`,  { count : newCount } ));
+        console.log("User count updated successfully");
+    }catch (error) {
+        console.error("Error updating user count:", error);
+    }
+}
+
+
+module.exports = { writeUserData , validateUser }

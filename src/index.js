@@ -3,7 +3,7 @@ const { Client,
     EmbedBuilder
 } = require('discord.js');
 const { keepAlive } = require('./utils/keepAlive');
-const { writeUserData } = require('./database/service');
+const { writeUserData , validateUser } = require('./database/service');
 
 require('dotenv').config();
 
@@ -29,17 +29,13 @@ client.on('messageCreate', message => {
     const filteredMessage = msg.filter(message => message.match(/nigger|nigga/i))   
 
     if(filteredMessage.length > 0 ){ 
+        const count = filteredMessage.length
         let userFound = false;
-
-        leaderBoard.forEach(value => { //register user
-            if(value.name === author){
-               value.count += filteredMessage.length
-               userFound = true;
-            }
-        })
+   
+        userFound = validateUser(message.author.id, count)
 
         if (!userFound) {
-            writeUserData(message.author, author, filteredMessage.length)
+            writeUserData(message.author.id, author, count)
         }
 
         // const count = leaderBoard.find(value => value.name === author)?.count || null;
