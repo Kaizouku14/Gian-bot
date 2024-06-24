@@ -52,7 +52,7 @@ client.on('interactionCreate', async (interaction) => {
 
     if(interaction.commandName === 'ping'){
         const username = interaction.user.username;
-        const userEntry = retrieveCount(interaction.user.id)
+        const userEntry = await retrieveCount(interaction.user.id)
 
         if (userEntry) {``
             const embed = new EmbedBuilder()
@@ -67,21 +67,21 @@ client.on('interactionCreate', async (interaction) => {
     }  
  
     if(interaction.commandName === 'leaderboard'){
-        const leaderBoard = retrieveAll();
-         
+        let leaderBoard = await retrieveAll();
+
         if(leaderBoard.length > 0){
 
             let description = '```\nNo.   User              No. of N-words said\n';
-            leaderBoard.forEach((value, index) => {
-                const position = String(index + 1).padEnd(4, ' '); 
-                let name = value.name.padEnd(15, ' '); 
-                if (index === 0) name = '🥇 ' + name; 
-                if (index === 1) name = '🥈 ' + name; 
-                if (index === 2) name = '🥉 ' + name; 
-                const count = String(value.count).padStart(9, ' '); 
-                description += `${position} ${name} ${count}\n`;
-            });
-            description += '```';
+                leaderBoard.forEach((value, index) => {
+                    const position = String(index + 1).padEnd(4, ' ');
+                    let name = value.username.slice(0, 15).padEnd(15, ' '); // Limit username length to 15 characters
+                    if (index === 0) name = '🥇 ' + name;
+                    if (index === 1) name = '🥈 ' + name;
+                    if (index === 2) name = '🥉 ' + name;
+                    const count = String(value.count).padStart(9, ' ');
+                    description += `${position} ${name} ${count}\n`;
+                });
+                description += '```';
 
             const embed = new EmbedBuilder()
                 .setTitle('Leader Board')
