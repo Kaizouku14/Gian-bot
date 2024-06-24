@@ -29,13 +29,12 @@ client.on('messageCreate', message => {
     const filteredMessage = msg.filter(message => message.match(/nigger|nigga/i))   
 
     if(filteredMessage.length > 0 ){ 
-        const count = filteredMessage.length
-        let userFound = false;
+        const count = filteredMessage.length;
    
-        userFound = validateUser(message.author.id, count)
-
-        if (!userFound) {
-            writeUserData(message.author.id, author, count)
+        if (validateUser(message.author.id, count)) { //if already existed
+            console.log("User count updated successfully");
+        }else{
+            writeUserData(message.author.id, author, count) //not existed
         }
 
         const currentCount = retrieveCount(message.author.id)
