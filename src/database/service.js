@@ -1,4 +1,10 @@
-const { ref , set , get , child , update } = require("firebase/database");
+const { ref , 
+set , 
+get , 
+child , 
+update, 
+query , 
+orderByChild } = require("firebase/database");
 const { db } = require("./connection");
 
 
@@ -40,5 +46,46 @@ const updateUserData = async (userId, newCount) => {
     }
 }
 
+const retrieveCount = async (userId) => {
+    const dbRef = ref(db);
 
-module.exports = { writeUserData , validateUser }
+    try {
+        const snapshot = await get(child(dbRef, `users/${userId}`));
+
+        if (snapshot.exists()) {
+            return snapshot.val().count || 0;
+        } 
+
+    } catch (error) {
+        console.error("Error checking user:", error);
+    }
+}
+
+const retrieveAll = async () => {
+    const usersRef = ref(db, 'users');
+    const usersQuery = query(usersRef, orderByChild('count'));
+
+    try {
+        const snapshot = await get(usersQuery);
+        if (snapshot.exists()) {
+            const usersData = [];
+            snapshot.forEach(userSnapshot => {
+                usersData.push({ id: userSnapshot.key, ...userSnapshot.val() });
+            });
+
+            return usersData;
+        } else {
+            return [];
+        }
+    } catch (error) {
+        console.error("Error retrieving users:", error);
+        return [];
+    }
+}
+
+module.exports = { 
+    writeUserData , 
+    validateUser , 
+    retrieveCount , 
+    retrieveAll
+}

@@ -1,9 +1,10 @@
-const { Client, 
-    GatewayIntentBits ,
-    EmbedBuilder
+const { 
+Client, 
+GatewayIntentBits ,
+EmbedBuilder
 } = require('discord.js');
 const { keepAlive } = require('./utils/keepAlive');
-const { writeUserData , validateUser } = require('./database/service');
+const { writeUserData , validateUser, retrieveCount , retrieveAll } = require('./database/service');
 
 require('dotenv').config();
 
@@ -19,7 +20,6 @@ client.on('ready', () => {
     keepAlive({ port: 3000 });
 });
 
-const leaderBoard = []
 
 client.on('messageCreate', message => {
     if(message.author.bot) return;
@@ -38,12 +38,12 @@ client.on('messageCreate', message => {
             writeUserData(message.author.id, author, count)
         }
 
-        // const count = leaderBoard.find(value => value.name === author)?.count || null;
-        // const embed = checkMilestones(author , count);
+        const currentCount = retrieveCount(message.author.id)
+        const embed = checkMilestones(author , currentCount);
 
-        // if (embed) {
-        //     message.channel.send({ embeds: [embed] });
-        // }
+        if (embed) {
+            message.channel.send({ embeds: [embed] });
+        }
     }
 })
 
@@ -52,13 +52,13 @@ client.on('interactionCreate', async (interaction) => {
 
     if(interaction.commandName === 'ping'){
         const username = interaction.user.username;
-        const userEntry = leaderBoard.find(entry => entry.name === username);
+        const userEntry = retrieveCount(interaction.user.id)
 
         if (userEntry) {``
             const embed = new EmbedBuilder()
                 .setTitle('🎉 Achievement 🎉')
                 .setColor('#0099ff')
-                .setDescription(`Hey ${username}, you've already mentioned **nigga/nigger**: \`${userEntry.count} times!\` Keep it up!`);
+                .setDescription(`Hey ${username}, you've already mentioned **nigga/nigger**: \`${userEntry} times!\` Keep it up!`);
 
             await interaction.reply({ embeds: [embed] });
         } else {
@@ -67,8 +67,9 @@ client.on('interactionCreate', async (interaction) => {
     }  
  
     if(interaction.commandName === 'leaderboard'){
-       if(leaderBoard.length > 0){
-            leaderBoard.sort((a, b) => b.count - a.count) // sort in descending order
+        const leaderBoard = retrieveAll();
+         
+        if(leaderBoard.length > 0){
 
             let description = '```\nNo.   User              No. of N-words said\n';
             leaderBoard.forEach((value, index) => {
@@ -95,7 +96,7 @@ client.on('interactionCreate', async (interaction) => {
 })
 
 function checkMilestones(username, count) {
-    if (count === null) return null;
+    if (count === 0) return -1;
 
     const milestones = {
         1: 'Newborn',
