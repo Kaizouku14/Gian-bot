@@ -2,7 +2,12 @@ const { Client,
     GatewayIntentBits ,
     EmbedBuilder
 } = require('discord.js');
+const { keepAlive } = require('./utils/keepAlive');
+const { default: database } = require('./database/connection');
+database
+
 require('dotenv').config();
+
 
 const client = new Client ({
   intents : [ GatewayIntentBits.Guilds,
@@ -12,6 +17,8 @@ const client = new Client ({
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
+
+    keepAlive({ port: 3000 });
 });
 
 const leaderBoard = []
@@ -37,13 +44,13 @@ client.on('messageCreate', message => {
             leaderBoard.push({ name: author, count: filteredMessage.length }); 
         }
 
-    const count = leaderBoard.find(value => value.name === author)?.count || null;
-    const embed = checkMilestones(author , count);
+        const count = leaderBoard.find(value => value.name === author)?.count || null;
+        const embed = checkMilestones(author , count);
 
-    if (embed) {
-        message.channel.send({ embeds: [embed] });
+        if (embed) {
+            message.channel.send({ embeds: [embed] });
+        }
     }
-  }
 })
 
 client.on('interactionCreate', async (interaction) => {
@@ -53,7 +60,7 @@ client.on('interactionCreate', async (interaction) => {
         const username = interaction.user.username;
         const userEntry = leaderBoard.find(entry => entry.name === username);
 
-        if (userEntry) {
+        if (userEntry) {``
             const embed = new EmbedBuilder()
                 .setTitle('🎉 Achievement 🎉')
                 .setColor('#0099ff')
@@ -64,7 +71,7 @@ client.on('interactionCreate', async (interaction) => {
             await interaction.reply(` \`Hey\` ${interaction.user}, \`You do not have an achievement 😔.\` `);
         }
     }  
-
+ 
     if(interaction.commandName === 'leaderboard'){
        if(leaderBoard.length > 0){
             leaderBoard.sort((a, b) => b.count - a.count) // sort in descending order
@@ -88,7 +95,7 @@ client.on('interactionCreate', async (interaction) => {
     
             await interaction.reply({ embeds: [embed] });
        }else{
-           await interaction.reply(` \`No record yet.\` `)
+           await interaction.reply('\`No record yet.\`')
        }      
     }
 })
