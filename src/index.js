@@ -20,7 +20,7 @@ client.on('ready', () => {
 });
 
 
-client.on('messageCreate', message => {
+client.on('messageCreate', async (message) => {
     if(message.author.bot) return;
 
     const author = message.author.username;
@@ -29,15 +29,16 @@ client.on('messageCreate', message => {
 
     if(filteredMessage.length > 0 ){ 
         const count = filteredMessage.length;
-   
-        if (validateUser(message.author.id, count)) { 
+
+        const isValidUser = await validateUser(message.author.id, count);
+
+        if (isValidUser) { 
             console.log("User count updated successfully");
         }else{
             writeUserData(message.author.id, author, count); 
         }
 
-        const currentCount = retrieveCount(message.author.id);
-
+        const currentCount = await retrieveCount(message.author.id);
         if(currentCount > 0){
             const embed = checkMilestones(author , currentCount);
 
@@ -46,6 +47,7 @@ client.on('messageCreate', message => {
             }
         }
     }
+    
 })
 
 client.on('interactionCreate', async (interaction) => {
@@ -72,19 +74,20 @@ client.on('interactionCreate', async (interaction) => {
             await interaction.deferReply(); 
 
             let leaderBoard = await retrieveAll();
+            leaderBoard.sort((a, b) => b.count - a.count);
 
             if (leaderBoard.length > 0) {
-                let description = '```\nNo.   User              No. of N-words\n';
-                leaderBoard.forEach((value, index) => {
-                    const position = String(index + 1).padEnd(4, ' ');
-                    let name = value.username.slice(0, 15).padEnd(15, ' '); 
-                    if (index === 0) name = '🥇 ' + name;
-                    if (index === 1) name = '🥈 ' + name;
-                    if (index === 2) name = '🥉 ' + name;
-                    const count = String(value.count).padStart(9, ' ');
-                    description += `${position} ${name} ${count}\n`;
-                });
-                description += '```';
+                let description = '```\nTop Niggers           No. of N word said\n';
+                    leaderBoard.forEach((value, index) => {
+                        const position = `${index + 1}.`.padEnd(3, ' ');
+                        let name = value.username.slice(0, 15).padEnd(15, ' ');
+                        if (index === 0) name = `🥇 ${name}`;
+                        if (index === 1) name = `🥈 ${name}`;
+                        if (index === 2) name = `🥉 ${name}`;
+                        const count = String(value.count).padStart(25 - name.length, ' ');
+                        description += `${position}${name}${count}\n`;
+                    });
+                    description += '```';
 
                 const embed = new EmbedBuilder()
                     .setTitle('Leader Board')

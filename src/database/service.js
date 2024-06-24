@@ -1,15 +1,16 @@
 const { ref , 
-set , 
+push,
 get , 
-child , 
 update, 
 query , 
-orderByChild } = require("firebase/database");
+orderByChild,
+equalTo } = require("firebase/database");
 const { db } = require("./connection");
 
-const writeUserData = async (userId, name, count ) => {
+const writeUserData = async (userId, name, count) => {
     try {
-        await set(ref(db, 'users/' + userId), {
+        await push(ref(db, 'users'), {
+            userId : userId,
             username: name,
             count: count
         });
@@ -20,44 +21,70 @@ const writeUserData = async (userId, name, count ) => {
 }
 
 const validateUser = async (userId, newCount) => {
-    const dbRef = ref(db);
+    const userRef = ref(db, `users`);
 
-    await get(child(dbRef, `users/${userId}`)).then((snapshot) => {
+    try {
+        const userQuery = query(userRef, orderByChild('userId'), equalTo(userId));
 
-        if (snapshot.exists()){
-            const currentCount = snapshot.val().count || 0
-            const updatedCount = currentCount + newCount
+        const snapshot = await get(userQuery);
 
-            updateUserData(userId,updatedCount)
-            return true;
-        } 
-        else return false;
-        
-    }).catch((error) => console.log(error));
+        if (snapshot.exists()) {
+            const userData = snapshot.val();
+            const userKey = Object.keys(userData)[0]; // Get the first key (user ID)
+            const currentCount = userData[userKey].count || 0; 
+            const totalCount = currentCount + newCount; 
+
+            return await updateUserData(userId, totalCount);
+
+        } else {
+            console.log('User not found');
+            return false;
+        }
+    } catch (error) {
+        console.error('Error validating user:', error.message);
+        return false;
+    }
 }
 
 const updateUserData = async (userId, newCount) => {
+    const userRef = ref(db, 'users');
+
     try {
-        await update(ref(db, `users/${userId}`), { count: newCount });
+        const userQuery = query(userRef, orderByChild('userId'), equalTo(userId));
+        const snapshot = await get(userQuery);
+
+        if (snapshot.exists()) {
+            const userKey = Object.keys(snapshot.val())[0];
+            const specificUserRef = ref(db, `users/${userKey}`);
+            await update(specificUserRef, { count: newCount });
+
+            return true;
+        } else {
+            console.error('User not found');
+        }
     } catch (error) {
-        console.error("Error updating user count:", error);
+        console.error('Error updating user data:', error.message);
     }
 }
 
 const retrieveCount = async (userId) => {
-    const dbRef = ref(db);
+    const usersRef = ref(db, 'users');
 
     try {
-        const snapshot = await get(child(dbRef, `users/${userId}`));
+        const snapshot = await get(usersRef);
 
         if (snapshot.exists()) {
-            return snapshot.val().count || 0;
-        }else{
-            return 0;
-        }
+            const users = snapshot.val();
+            const userKey = Object.keys(users).find(key => users[key].userId === userId);
 
+            if (userKey) return users[userKey].count || 0;
+            else return 0;
+    
+        } else {
+            return -1;
+        }
     } catch (error) {
-        console.error("Error checking user:", error);
+        console.error('Error retrieving user count:', error.message);
     }
 }
 
