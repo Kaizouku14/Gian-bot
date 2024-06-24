@@ -50,49 +50,56 @@ client.on('messageCreate', message => {
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
-    if(interaction.commandName === 'ping'){
-        const username = interaction.user.username;
-        const userEntry = await retrieveCount(interaction.user.id)
-
-        if (userEntry) {``
-            const embed = new EmbedBuilder()
-                .setTitle('🎉 Achievement 🎉')
-                .setColor('#0099ff')
-                .setDescription(`Hey ${username}, you've already mentioned **nigga/nigger**: \`${userEntry} times!\` Keep it up!`);
-
-            await interaction.reply({ embeds: [embed] });
-        } else {
-            await interaction.reply(` \`Hey\` ${interaction.user}, \`You do not have an achievement 😔.\` `);
-        }
-    }  
- 
-    if(interaction.commandName === 'leaderboard'){
-        let leaderBoard = await retrieveAll();
-
-        if(leaderBoard.length > 0){
-
-            let description = '```\nNo.   User              No. of N-words said\n';
-                leaderBoard.forEach((value, index) => {
-                    const position = String(index + 1).padEnd(4, ' ');
-                    let name = value.username.slice(0, 15).padEnd(15, ' '); // Limit username length to 15 characters
-                    if (index === 0) name = '🥇 ' + name;
-                    if (index === 1) name = '🥈 ' + name;
-                    if (index === 2) name = '🥉 ' + name;
-                    const count = String(value.count).padStart(9, ' ');
-                    description += `${position} ${name} ${count}\n`;
-                });
-                description += '```';
-
-            const embed = new EmbedBuilder()
-                .setTitle('Leader Board')
-                .setColor('#0099ff')
-                .setDescription(description);
+    try{
+        
+        if(interaction.commandName === 'ping'){
+            const username = interaction.user.username;
+            const userEntry = await retrieveCount(interaction.user.id)
     
-            await interaction.reply({ embeds: [embed] });
-       }else{
-           await interaction.reply('\`No record yet.\`')
-       }      
+            if (userEntry) {``
+                const embed = new EmbedBuilder()
+                    .setTitle('🎉 Achievement 🎉')
+                    .setColor('#0099ff')
+                    .setDescription(`Hey ${username}, you've already mentioned **nigga/nigger**: \`${userEntry} times!\` Keep it up!`);
+    
+                await interaction.reply({ embeds: [embed] });
+            } else {
+                await interaction.reply(` \`Hey\` ${interaction.user}, \`You do not have an achievement 😔.\` `);
+            }
+        }  
+     
+        if(interaction.commandName === 'leaderboard'){
+            let leaderBoard = await retrieveAll();
+    
+            if(leaderBoard.length > 0){
+    
+                let description = '```\nNo.   User              No. of N-words said\n';
+                    leaderBoard.forEach((value, index) => {
+                        const position = String(index + 1).padEnd(4, ' ');
+                        let name = value.username.slice(0, 15).padEnd(15, ' '); // Limit username length to 15 characters
+                        if (index === 0) name = '🥇 ' + name;
+                        if (index === 1) name = '🥈 ' + name;
+                        if (index === 2) name = '🥉 ' + name;
+                        const count = String(value.count).padStart(9, ' ');
+                        description += `${position} ${name} ${count}\n`;
+                    });
+                    description += '```';
+    
+                const embed = new EmbedBuilder()
+                    .setTitle('Leader Board')
+                    .setColor('#0099ff')
+                    .setDescription(description);
+        
+                await interaction.reply({ embeds: [embed] });
+           }else{
+               await interaction.reply('\`No record yet.\`')
+           }      
+        }
+
+    }catch(error){
+        await interaction.reply('There was an unexpected error. Please try again later.');
     }
+
 })
 
 function checkMilestones(username, count) {
