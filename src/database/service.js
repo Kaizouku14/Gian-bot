@@ -7,7 +7,6 @@ query ,
 orderByChild } = require("firebase/database");
 const { db } = require("./connection");
 
-
 const writeUserData = async (userId, name, count ) => {
     try {
         await set(ref(db, 'users/' + userId), {
@@ -40,7 +39,6 @@ const validateUser = async (userId, newCount) => {
 const updateUserData = async (userId, newCount) => {
     try {
         await update(ref(db, `users/${userId}`), { count: newCount });
-        console.log("User count updated successfully");
     } catch (error) {
         console.error("Error updating user count:", error);
     }
@@ -54,7 +52,9 @@ const retrieveCount = async (userId) => {
 
         if (snapshot.exists()) {
             return snapshot.val().count || 0;
-        } 
+        }else{
+            return 0;
+        }
 
     } catch (error) {
         console.error("Error checking user:", error);

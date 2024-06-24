@@ -16,7 +16,6 @@ const client = new Client ({
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
-
     keepAlive({ port: 3000 });
 });
 
@@ -31,17 +30,20 @@ client.on('messageCreate', message => {
     if(filteredMessage.length > 0 ){ 
         const count = filteredMessage.length;
    
-        if (validateUser(message.author.id, count)) { //if already existed
+        if (validateUser(message.author.id, count)) { 
             console.log("User count updated successfully");
         }else{
-            writeUserData(message.author.id, author, count) //not existed
+            writeUserData(message.author.id, author, count); 
         }
 
-        const currentCount = retrieveCount(message.author.id)
-        const embed = checkMilestones(author , currentCount);
+        const currentCount = retrieveCount(message.author.id);
 
-        if (embed) {
-            message.channel.send({ embeds: [embed] });
+        if(currentCount > 0){
+            const embed = checkMilestones(author , currentCount);
+
+            if (embed) {
+                message.channel.send({ embeds: [embed] });
+            }
         }
     }
 })
@@ -72,7 +74,7 @@ client.on('interactionCreate', async (interaction) => {
             let leaderBoard = await retrieveAll();
 
             if (leaderBoard.length > 0) {
-                let description = '```\nNo.   User              No. of N-words said\n';
+                let description = '```\nNo.   User              No. of N-words\n';
                 leaderBoard.forEach((value, index) => {
                     const position = String(index + 1).padEnd(4, ' ');
                     let name = value.username.slice(0, 15).padEnd(15, ' '); 
@@ -106,7 +108,6 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 function checkMilestones(username, count) {
-    if (count === 0) return -1;
 
     const milestones = {
         1: 'Newborn',
