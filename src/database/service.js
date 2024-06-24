@@ -20,19 +20,22 @@ const validateUser = async (userId, newCount) => {
     await get(child(dbRef, `users/${userId}`)).then((snapshot) => {
 
         if (snapshot.exists()){
-            updateUserData(newCount)
-            return true
+            const currentCount = snapshot.val().count || 0
+            const updatedCount = currentCount + newCount
+
+            updateUserData(userId,updatedCount)
+            return true;
         } 
-        else return false
+        else return false;
         
     }).catch((error) => console.log(error));
 }
 
-const updateUserData = async (userId, newCount ) => {
-    try{
-        await update(ref(db, `users/${userId}`,  { count : newCount } ));
+const updateUserData = async (userId, newCount) => {
+    try {
+        await update(ref(db, `users/${userId}`), { count: newCount });
         console.log("User count updated successfully");
-    }catch (error) {
+    } catch (error) {
         console.error("Error updating user count:", error);
     }
 }
