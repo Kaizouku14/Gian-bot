@@ -36,7 +36,8 @@ client.on('messageCreate', async (message) => {
         const isValidUser = await validateUser(message.author.id, count);
 
         if (isValidUser) { 
-            console.log("User count updated successfully");
+            //print if successfull
+            // console.log("User count updated successfully");
         }else{
             writeUserData(message.author.id, author, count); 
         }
@@ -44,15 +45,16 @@ client.on('messageCreate', async (message) => {
         const result = await retrieveCount(message.author.id);
 
         if(result.count > 0){
-            const embed = checkMilestone(message.author.id, username, result.count);
-                  
+            const embed = await checkMilestone(message.author.id, author, result.count);
+
             if (embed) {
-                message.channel.send({ embeds: [embed] });
+               await message.channel.send({ embeds: [embed] })
             }
         }
     }
     
 })
+
 
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
@@ -67,7 +69,7 @@ client.on('interactionCreate', async (interaction) => {
                     .setTitle('🎉 Achievement 🎉')
                     .setColor('#0099ff')
                     .setDescription(`Hey ${username}, you've already mentioned **nigga/nigger**: \`${result.count} times!\` Keep it up!\n
-                        Milestone rank : \`${result.rank} times!\``);
+                        Milestone rank : \`${result.rank}\``);
 
                 await interaction.reply({ embeds: [embed] });
             } else {
@@ -76,7 +78,6 @@ client.on('interactionCreate', async (interaction) => {
         }
 
         if (interaction.commandName === 'leaderboard') {
-            await interaction.deferReply(); 
 
             let leaderBoard = await retrieveAll();
             leaderBoard.sort((a, b) => b.count - a.count);
@@ -99,30 +100,32 @@ client.on('interactionCreate', async (interaction) => {
                     .setColor('#0099ff')
                     .setDescription(description);
 
-                await interaction.editReply({ embeds: [embed] }); 
+                await interaction.reply({ embeds: [embed] }); 
             } else {
-                await interaction.editReply('`No record yet.`');
+                await interaction.reply('`No record yet.`');
             }
         }
     } catch (error) {
         console.error('Error handling interaction:', error);
 
-        if (!interaction.replied) {
-            await interaction.reply('There was an unexpected error. Please try again later.');
-        } else {
+        // Check if interaction has already been replied to or deferred
+        if (interaction.replied || interaction.deferred) {
             await interaction.followUp('There was an unexpected error. Please try again later.');
+        } else {
+            await interaction.reply('There was an unexpected error. Please try again later.');
         }
     }
 });
+
 
 const checkMilestone = async (userId, username, count) => {
     if (count < 50) return null;
 
     const ranks = [
-        { min: 50, max: 100, rank: 'veteran' },
+        { min: 50, max: 100, rank: 'Veteran' },
         { min: 101, max: 500, rank: 'Legend' },
-        { min: 501, max: 1000, rank: 'master' },
-        { min: 1001, max: Infinity, rank: 'the goat' }
+        { min: 501, max: 1000, rank: 'Master' },
+        { min: 1001, max: Infinity, rank: 'THE GOAT' }
     ];
 
     for (const { min, max, rank } of ranks) {
@@ -131,20 +134,22 @@ const checkMilestone = async (userId, username, count) => {
                 await updateRank(userId, rank);
 
                 const description = `Hey ${username}, you've reached a count of \`${count}\`! Keep it up!`;
+
                 const embed = new EmbedBuilder()
                     .setTitle('🎉 Achievement 🎉')
                     .setColor('#0099ff')
                     .setDescription(description)
                     .addFields({ name: 'Milestone', value: rank, inline: true });
-
+                
                 return embed;
             } catch (error) {
                 console.error('Error updating rank:', error);
             }
         }
     }
-};
 
+    return null; 
+};
 
 client.login(process.env.TOKEN)
 

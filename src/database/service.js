@@ -15,7 +15,6 @@ const writeUserData = async (userId, name, count) => {
             count: count,
             rank : 'Newbie'
         });
-        console.log('Data written successfully');
     } catch (error) {
         console.error('Error writing data:', error);
     }
