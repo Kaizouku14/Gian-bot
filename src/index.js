@@ -1,10 +1,13 @@
-const { 
-Client, 
+const { Client, 
 GatewayIntentBits ,
 EmbedBuilder
 } = require('discord.js');
 const { keepAlive } = require('./utils/keepAlive');
-const { writeUserData , validateUser, retrieveCount , retrieveAll } = require('./database/service');
+const { writeUserData , 
+validateUser, 
+retrieveCount , 
+retrieveAll, 
+updateRank } = require('./database/service');
 
 require('dotenv').config();
 
@@ -38,10 +41,11 @@ client.on('messageCreate', async (message) => {
             writeUserData(message.author.id, author, count); 
         }
 
-        const currentCount = await retrieveCount(message.author.id);
-        if(currentCount > 0){
-            const embed = checkMilestones(author , currentCount);
+        const result = await retrieveCount(message.author.id);
 
+        if(result.count > 0){
+            const embed = checkMilestone(message.author.id, username, result.count);
+                  
             if (embed) {
                 message.channel.send({ embeds: [embed] });
             }
@@ -56,13 +60,14 @@ client.on('interactionCreate', async (interaction) => {
     try {
         if (interaction.commandName === 'ping') {
             const username = interaction.user.username;
-            const userEntry = await retrieveCount(interaction.user.id);
+            const result = await retrieveCount(interaction.user.id);
 
-            if (userEntry) {
+            if (result) {
                 const embed = new EmbedBuilder()
                     .setTitle('🎉 Achievement 🎉')
                     .setColor('#0099ff')
-                    .setDescription(`Hey ${username}, you've already mentioned **nigga/nigger**: \`${userEntry} times!\` Keep it up!`);
+                    .setDescription(`Hey ${username}, you've already mentioned **nigga/nigger**: \`${result.count} times!\` Keep it up!\n
+                        Milestone rank : \`${result.rank} times!\``);
 
                 await interaction.reply({ embeds: [embed] });
             } else {
@@ -110,29 +115,36 @@ client.on('interactionCreate', async (interaction) => {
     }
 });
 
-function checkMilestones(username, count) {
+const checkMilestone = async (userId, username, count) => {
+    if (count < 50) return null;
 
-    const milestones = {
-        1: 'Newborn',
-        50: 'Veteran',
-        100: 'Legend',
-        500: 'Master',
-        1000: 'THE GOAT'
-    };
+    const ranks = [
+        { min: 50, max: 100, rank: 'veteran' },
+        { min: 101, max: 500, rank: 'Legend' },
+        { min: 501, max: 1000, rank: 'master' },
+        { min: 1001, max: Infinity, rank: 'the goat' }
+    ];
 
-    const milestone = milestones[count];
-    if (milestone) {
-        const description = `Hey ${username}, you've already mentioned **nigga/nigger**: \`${count}\` times! Keep it up!`;
-        const embed = new EmbedBuilder()
-            .setTitle('🎉 Achievement 🎉')
-            .setColor('#0099ff')
-            .setDescription(description)
-            .addFields({ name: 'Milestone', value: milestone, inline: true });
-        return embed;
+    for (const { min, max, rank } of ranks) {
+        if (count >= min && count <= max) {
+            try {
+                await updateRank(userId, rank);
+
+                const description = `Hey ${username}, you've reached a count of \`${count}\`! Keep it up!`;
+                const embed = new EmbedBuilder()
+                    .setTitle('🎉 Achievement 🎉')
+                    .setColor('#0099ff')
+                    .setDescription(description)
+                    .addFields({ name: 'Milestone', value: rank, inline: true });
+
+                return embed;
+            } catch (error) {
+                console.error('Error updating rank:', error);
+            }
+        }
     }
+};
 
-    return null;
-}
 
 client.login(process.env.TOKEN)
 

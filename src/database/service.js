@@ -12,7 +12,8 @@ const writeUserData = async (userId, name, count) => {
         await push(ref(db, 'users'), {
             userId : userId,
             username: name,
-            count: count
+            count: count,
+            rank : 'Newbie'
         });
         console.log('Data written successfully');
     } catch (error) {
@@ -46,7 +47,15 @@ const validateUser = async (userId, newCount) => {
     }
 }
 
+const updateRank = async (userId, newRank) => {
+    return await updateUserField(userId, 'rank', newRank);
+};
+
 const updateUserData = async (userId, newCount) => {
+    return await updateUserField(userId, 'count', newCount);
+};
+
+const updateUserField = async (userId, field, value) => {
     const userRef = ref(db, 'users');
 
     try {
@@ -56,7 +65,7 @@ const updateUserData = async (userId, newCount) => {
         if (snapshot.exists()) {
             const userKey = Object.keys(snapshot.val())[0];
             const specificUserRef = ref(db, `users/${userKey}`);
-            await update(specificUserRef, { count: newCount });
+            await update(specificUserRef, { [field]: value });
 
             return true;
         } else {
@@ -65,7 +74,7 @@ const updateUserData = async (userId, newCount) => {
     } catch (error) {
         console.error('Error updating user data:', error.message);
     }
-}
+};
 
 const retrieveCount = async (userId) => {
     const usersRef = ref(db, 'users');
@@ -77,9 +86,9 @@ const retrieveCount = async (userId) => {
             const users = snapshot.val();
             const userKey = Object.keys(users).find(key => users[key].userId === userId);
 
-            if (userKey) return users[userKey].count || 0;
+            if (userKey) return {count : users[userKey].count || 0, rank : users[userKey].rank}
             else return 0;
-    
+
         } else {
             return -1;
         }
@@ -114,5 +123,6 @@ module.exports = {
     writeUserData , 
     validateUser , 
     retrieveCount , 
-    retrieveAll
+    retrieveAll, 
+    updateRank
 }
